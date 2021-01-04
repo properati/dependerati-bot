@@ -17,49 +17,59 @@ if [[ -z "$GIT_EMAIL" ]]; then
   exit 1
 fi
 
+OWNER="properati"
+REPOS=( "properapi" "sellers_api"  )
+
 git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
 git checkout master
-BRANCH_NAME="bundle_update/$(date "+%Y%m%d_%H%M%S")"
-git checkout -b ${BRANCH_NAME}
+BRANCH_NAME="gem_update/$(date "+%Y%m%d_%H%M%S")"
 
-export PATH="/usr/local/bundle/bin:$PATH"
+for repo in "$repos[@]"
+do
+	git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$OWNER/$repo"
+	git checkout master
+	BRANCH_NAME="gem_update/$(date "+%Y%m%d_%H%M%S")"
+	git checkout -b ${BRANCH_NAME}
 
-if [[ -n "$INPUT_BUNDLER_VERSION" ]]; then
-  gem install bundler -v "$INPUT_BUNDLER_VERSION"
-else
-  gem install bundler
-fi
+	export PATH="/usr/local/bundle/bin:$PATH"
 
-gem install bundler-diff
+	if [[ -n "$INPUT_BUNDLER_VERSION" ]]; then
+	  gem install bundler -v "$INPUT_BUNDLER_VERSION"
+	else
+	  gem install bundler
+	fi
 
-bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib"
-bundle update
-bundle diff -f md_table
-BUNDLE_DIFF="$(bundle diff -f md_table)"
+	gem install bundler-diff
 
-if [ "$(git diff --name-only origin/master --diff-filter=d | wc -w)" == 0 ]; then
-  echo "not update"
-  exit 1
-fi
+	bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib"
+	bundle update
+	bundle diff -f md_table
+	BUNDLE_DIFF="$(bundle diff -f md_table)"
 
-export GITHUB_USER="$GITHUB_ACTOR"
+	if [ "$(git diff --name-only origin/master --diff-filter=d | wc -w)" == 0 ]; then
+	  echo "not update"
+	  exit 1
+	fi
 
-git config --global user.name $GIT_USER_NAME
-git config --global user.email $GIT_EMAIL
+	export GITHUB_USER="$GITHUB_ACTOR"
 
-hub add Gemfile Gemfile.lock
-hub commit -m "bundle update && bundle update --ruby"
-hub push origin ${BRANCH_NAME}
+	git config --global user.name $GIT_USER_NAME
+	git config --global user.email $GIT_EMAIL
 
-TITLE="bundle update $(date "+%Y%m%d_%H%M%S")"
+	hub add Gemfile Gemfile.lock
+	hub commit -m "bundle update && bundle update --ruby"
+	hub push origin ${BRANCH_NAME}
 
-PR_ARG="-m \"$TITLE\" -m \"$BUNDLE_DIFF\""
+	TITLE="bundle update $(date "+%Y%m%d_%H%M%S")"
 
-if [[ -n "$INPUT_REVIEWERS" ]]; then
-  PR_ARG="$PR_ARG -r \"$INPUT_REVIEWERS\""
-fi
+	PR_ARG="-m \"$TITLE\" -m \"$BUNDLE_DIFF\""
 
-COMMAND="hub pull-request -b master -h $BRANCH_NAME --no-edit $PR_ARG || true"
+	if [[ -n "$INPUT_REVIEWERS" ]]; then
+	  PR_ARG="$PR_ARG -r \"$INPUT_REVIEWERS\""
+	fi
 
-echo "$COMMAND"
-sh -c "$COMMAND"
+	COMMAND="hub pull-request -b master -h $BRANCH_NAME --no-edit $PR_ARG || true"
+
+	echo "$COMMAND"
+	sh -c "$COMMAND"
+done

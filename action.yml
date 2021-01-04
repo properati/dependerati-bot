@@ -1,5 +1,5 @@
-name: pull request on bundle update
-description: bundle update and pull request
+name: dependerati-bot 
+description: creates a pull request on a list of repos when gem is updated
 branding:
   icon: 'git-pull-request'
   color: 'green'
@@ -13,9 +13,6 @@ inputs:
   git_email:
     description: email of user who git push bundle update commit
     required: true
-  reviewers:
-    description: assigned user as a revierer
-    required: false
   bundler_version:
     description: set bundler version
     required: false
