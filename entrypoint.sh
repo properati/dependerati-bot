@@ -19,6 +19,7 @@ fi
 
 OWNER="properati"
 REPOS=( "properapi" "sellers_api"  )
+GEM="overol"
 
 git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
 git checkout master
@@ -42,7 +43,11 @@ do
 	gem install bundler-diff
 
 	bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib"
-	bundle update
+	if [[ -n "$GEM" ]]; then
+	  bundle update $GEM
+	else
+	  bundle update
+	fi
 	bundle diff -f md_table
 	BUNDLE_DIFF="$(bundle diff -f md_table)"
 
@@ -57,7 +62,7 @@ do
 	git config --global user.email $GIT_EMAIL
 
 	hub add Gemfile Gemfile.lock
-	hub commit -m "bundle update && bundle update --ruby"
+	hub commit -m "bundle update"
 	hub push origin ${BRANCH_NAME}
 
 	TITLE="bundle update $(date "+%Y%m%d_%H%M%S")"
