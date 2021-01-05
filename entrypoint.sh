@@ -44,7 +44,7 @@ do
 
 	bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib"
 	if [[ -n "$GEM" ]]; then
-	  bundle update $GEM
+	  bundle update --source $GEM
 	else
 	  bundle update
 	fi
