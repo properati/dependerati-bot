@@ -20,19 +20,18 @@ fi
 OWNER="properati"
 REPOS=( "properapi" "sellers_api"  )
 GEM="overol"
-
-git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
-git checkout master
 BRANCH_NAME="gem_update/$(date "+%Y%m%d_%H%M%S")"
+export PATH="/usr/local/bundle/bin:$PATH"
 
 for repo in "$repos[@]"
 do
-	git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$OWNER/$repo"
-	git checkout master
-	BRANCH_NAME="gem_update/$(date "+%Y%m%d_%H%M%S")"
-	git checkout -b ${BRANCH_NAME}
+	git init "$repo"
+	cd $repo
+	hub remote add origin $OWNER/$repo
+	hub fetch --depth=1 origin master
+	hub checkout master
+	hub checkout -b ${BRANCH_NAME}
 
-	export PATH="/usr/local/bundle/bin:$PATH"
 
 	if [[ -n "$INPUT_BUNDLER_VERSION" ]]; then
 	  gem install bundler -v "$INPUT_BUNDLER_VERSION"
@@ -77,4 +76,5 @@ do
 
 	echo "$COMMAND"
 	sh -c "$COMMAND"
+	cd ..
 done
