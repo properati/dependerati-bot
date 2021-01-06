@@ -23,9 +23,9 @@ GEM="overol"
 BRANCH_NAME="gem_update/$(date "+%Y%m%d_%H%M%S")"
 export PATH="/usr/local/bundle/bin:$PATH"
 
-for repo in "$repos[@]"
+for repo in "${REPOS[@]}"
 do
-	git init "$repo"
+	git init $repo
 	cd $repo
 	hub remote add origin $OWNER/$repo
 	hub fetch --depth=1 origin master
