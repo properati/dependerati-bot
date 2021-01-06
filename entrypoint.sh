@@ -27,7 +27,7 @@ for repo in "${REPOS[@]}"
 do
 	git init $repo
 	cd $repo
-	git remote set-url origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$OWNER/$repo"
+	git remote add origin "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$OWNER/$repo"
 	hub fetch --depth=1 origin master
 	hub checkout master
 	hub checkout -b ${BRANCH_NAME}
